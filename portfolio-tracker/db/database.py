@@ -52,13 +52,3 @@ class Database:
         rows = self._conn.execute("SELECT * FROM transactions ORDER BY date, id")
         transactions = [Transaction.from_row(row) for row in rows]
         return transactions
-
-if __name__ == "__main__":
-    import datetime
-    db = Database("test.db")
-    db.save_transaction(Transaction("aapl", "buy", 10, 150.0, datetime.date(2026, 1, 15)))
-    db.save_transaction(Transaction("aapl", "sell", 4, 170.0, datetime.date(2026, 3, 1)))
-    db.save_transaction(Transaction("msft", "buy", 5, 400.0, datetime.date(2026, 2, 10)))
-    print("AAPL only:", db.get_transactions_for_ticker("AAPL"))
-    print("all:", db.get_all_transactions())
-    db.close()
