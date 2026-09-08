@@ -18,6 +18,8 @@ class Transaction:
     date: datetime.date
     fees: float = 0.0
 
+    # __post_init__ guards below are mirrored by CHECK constraints in db/schema.sql
+    # (transactions table) — change both together.
     def __post_init__(self) -> None:
         if not self.ticker:
             raise ValueError(f"ticker symbol required, got {self.ticker!r}")
@@ -50,3 +52,14 @@ class Transaction:
         if self.fees < 0:
             raise ValueError(
                 f"fees must be greater than or equal to zero, got {self.fees!r}")
+
+    @classmethod
+    def from_row(cls, row) -> "Transaction":
+        return cls(
+            ticker=row["ticker"],
+            action=row["action"],
+            quantity=row["quantity"],
+            price=row["price"],
+            date=datetime.date.fromisoformat(row["date"]),
+            fees=row["fees"]
+        )
