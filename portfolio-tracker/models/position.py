@@ -48,9 +48,14 @@ class Position:
 
         return realized_gain
 
-if __name__ == "__main__":
-    apple = Position('AAPL')
-    apple.buy(1, 5, 0)
-    apple.buy(1, 10, 0)
-    print(apple.sell(1, 12))
-    print(apple)
+    @property
+    def cost_basis(self) -> float:
+        """Computes total dollars in the position at average cost"""
+        return self.quantity * self.avg_cost
+
+    def market_value(self, current_price: float) -> float:
+        """Computes market value based on current security price"""
+        if current_price < 0:
+            raise ValueError(f"price must be >= 0, got {current_price!r}")
+
+        return self.quantity * current_price

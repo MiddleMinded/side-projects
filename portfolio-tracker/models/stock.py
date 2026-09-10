@@ -1,4 +1,4 @@
-"""Class for tracking an individual security within the portfolio."""
+"""Class for identifying an individual security within the portfolio."""
 
 from dataclasses import dataclass, fields
 
@@ -19,7 +19,7 @@ class Stock:
             value = getattr(self, f.name)     # current value, a str
             value = value.strip()             # normalize: trim whitespace
             if not value:                     # validate: reject empty
-                raise ValueError(f"{f.name} is required.")
+                raise ValueError(f"a value is required, got {f.name!r}")
             if f.name == "ticker":            # field-specific normalization
                 value = value.upper()
             setattr(self, f.name, value)      # write the normalized value back
