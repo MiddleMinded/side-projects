@@ -13,8 +13,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     quantity        REAL NOT NULL CHECK (quantity > 0),
     price           REAL NOT NULL CHECK (price >= 0),
     fees            REAL NOT NULL DEFAULT 0.0 CHECK (fees >= 0),
-    date            TEXT NOT NULL,
-    realized_gain   REAL
+    date            TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_transactions_ticker ON transactions(ticker);
