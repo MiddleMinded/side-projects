@@ -1,7 +1,7 @@
 """Class for tracking an individual transaction within the portfolio."""
 
-from dataclasses import dataclass
 import datetime
+from dataclasses import dataclass
 
 VALID_ACTIONS = ("BUY", "SELL")
 

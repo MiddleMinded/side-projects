@@ -2,10 +2,13 @@
 Portfolio: the top-level holding that derives positions from the transaction log.
 """
 
+import datetime
+import logging
 from db.database import Database
 from models.position import Position
-from datetime import date
 from models.transaction import Transaction
+
+logger = logging.getLogger(__name__)
 class Portfolio:
     """
     Owns the open positions and the database they're rebuilt from.
@@ -47,23 +50,31 @@ class Portfolio:
 
         return self.positions[ticker]
 
+    def buy(self, ticker: str, quantity: float, price: float, 
+            date: datetime.date, fees: float =0.0) -> Position:
+        """
+        Record a buy: persist the transaction, then update the matching Position.
+        """
+        txn = Transaction(ticker, "BUY", quantity, price, date, fees)
+        self._db.save_transaction(txn)
+        position = self._get_or_create_position(txn.ticker)
+        position.buy(quantity, price, fees)
+        logger.info("buy %s %s @ %s", quantity, txn.ticker, price)
 
-    def buy
-if __name__ == "__main__":
-    db = Database(":memory:")
+        return position
 
-    txns = [
-        Transaction("AAPL", "BUY",  1, 5,  date(2024, 1, 1)),
-        Transaction("AAPL", "BUY",  1, 10, date(2024, 1, 2)),
-        Transaction("AAPL", "SELL", 1, 12, date(2024, 1, 3)),
-        Transaction("MSFT", "BUY",  2, 300, date(2024, 1, 4)),
-    ]
-    for txn in txns:
-        db.save_transaction(txn)
+    def sell(self, ticker: str, quantity: float, price: float, 
+            date: datetime.date, fees: float =0.0) -> float:
+        """
+        Record a sell: mutate the matching Position, then persist the transaction.
+        """
+        txn = Transaction(ticker, "SELL", quantity, price, date, fees)
+        position = self._get_or_create_position(txn.ticker)
 
-    portfolio = Portfolio(db)
-
-    for position in portfolio.positions.values():
-        print(position)
-
-    db.close()
+        realized_gain = position.sell(quantity, price, fees)
+        logger.info("sell %s %s @ %s, realized_gain=%s", quantity, txn.ticker, 
+                    price, realized_gain)
+      
+        self._db.save_transaction(txn)
+        
+        return realized_gain
