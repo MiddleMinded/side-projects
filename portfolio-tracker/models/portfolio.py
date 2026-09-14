@@ -7,6 +7,7 @@ import logging
 from db.database import Database
 from models.position import Position
 from models.transaction import Transaction
+from models.cash_account import CashFlowType, CashTransaction, CashAccount
 
 logger = logging.getLogger(__name__)
 class Portfolio:
@@ -23,10 +24,12 @@ class Portfolio:
         self._db = db
 
         self._load_positions()
+        self._load_cash_account()
 
     def _load_positions(self):
         """
-        Rebuild self.positions from scratch by replaying every recorded transaction.
+        Rebuild self.positions from scratch by replaying every recorded 
+        transaction.
         """
         self.positions = {}
         for txn in self._db.get_all_transactions():
@@ -39,6 +42,15 @@ class Portfolio:
                 position.sell(txn.quantity, txn.price, txn.fees)
             else:
                 raise ValueError(f"BUY or SELL is required, got {txn.action!r}")
+
+    def _load_cash_account(self):
+        """
+        Rebuild self.cash_account from scratch by replaying every recorded 
+        transaction.
+        """
+        self.cash_account = CashAccount()
+        for cash_txn in self._db.get_all_cash_transactions():
+            self.cash_account.apply(cash_txn.amount)
 
     def _get_or_create_position(self, ticker: str) -> Position:
         """
@@ -56,7 +68,10 @@ class Portfolio:
         Record a buy: persist the transaction, then update the matching Position.
         """
         txn = Transaction(ticker, "BUY", quantity, price, date, fees)
+        self._settle_trade(txn)
+
         self._db.save_transaction(txn)
+
         position = self._get_or_create_position(txn.ticker)
         position.buy(quantity, price, fees)
         logger.info("buy %s %s @ %s", quantity, txn.ticker, price)
@@ -72,9 +87,44 @@ class Portfolio:
         position = self._get_or_create_position(txn.ticker)
 
         realized_gain = position.sell(quantity, price, fees)
+        self._settle_trade(txn)
         logger.info("sell %s %s @ %s, realized_gain=%s", quantity, txn.ticker, 
                     price, realized_gain)
       
         self._db.save_transaction(txn)
         
         return realized_gain
+
+    def _settle_trade(self, txn: Transaction) -> None:
+        """Calculates the delta of buy and sell transactions."""
+        if txn.action == "BUY":
+            delta = -(txn.quantity * txn.price + txn.fees)
+            description = (f"Bought {txn.quantity} shares of {txn.ticker} at "
+                           f"${txn.price}/share.")
+        elif txn.action == "SELL":
+            delta = txn.quantity * txn.price - txn.fees
+            description = (f"Sold {txn.quantity} shares of {txn.ticker} at "
+                                       f"${txn.price}/share.")
+        else:
+            raise ValueError(f"BUY or SELL was expected, got {txn.action!r}")
+
+        cash_txn = CashTransaction(CashFlowType.TRADE_SETTLEMENT, delta, 
+                                   txn.date, description)
+        self.cash_account.apply(delta)
+        logger.info("settled trade: %s %s %s", txn.action, txn.ticker, delta)
+
+        self._db.save_cash_transaction(cash_txn)
+
+if __name__ == "__main__":
+    db = Database(":memory:")
+    portfolio = Portfolio(db)
+    my_deposit = CashTransaction(CashFlowType.DEPOSIT, 20, datetime.date(2024, 1, 1), "Funding account")
+    portfolio.cash_account.apply(my_deposit.amount)
+    db.save_cash_transaction(my_deposit)
+    portfolio.buy("AAPL", 2, 10, datetime.date(2024, 1, 5))
+    portfolio.sell("AAPL", 1, 5, datetime.date(2024, 1, 10))
+    print(portfolio.cash_account.balance)
+    portfolio2 = Portfolio(db)
+    print(portfolio2.cash_account.balance)
+
+        
