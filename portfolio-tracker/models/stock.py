@@ -24,4 +24,11 @@ class Stock:
                 value = value.upper()
             setattr(self, f.name, value)      # write the normalized value back
 
-        
+    @classmethod
+    def from_row(cls, row) -> "Stock":
+        return cls(
+            ticker=row["ticker"],
+            name=row["name"],
+            sector=row["sector"],
+            exchange=row["exchange"],
+        )

@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     quantity        REAL NOT NULL CHECK (quantity > 0),
     price           REAL NOT NULL CHECK (price >= 0),
     fees            REAL NOT NULL DEFAULT 0.0 CHECK (fees >= 0),
-    date            TEXT NOT NULL
+    date            TEXT NOT NULL,
+    FOREIGN KEY (ticker) REFERENCES stocks(ticker)
 );
 
 -- CHECK constraints below mirror CashTransaction.__post_init__ — change both together.

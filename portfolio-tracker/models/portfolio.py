@@ -25,6 +25,7 @@ class Portfolio:
 
         self._load_positions()
         self._load_cash_account()
+        self._load_sectors()
 
     def _load_positions(self):
         """
@@ -33,8 +34,7 @@ class Portfolio:
         """
         self.positions = {}
         for txn in self._db.get_all_transactions():
-            ticker = txn.ticker
-            position = self._get_or_create_position(ticker)
+            position = self._get_or_create_position(txn.ticker)
 
             if txn.action == "BUY":
                 position.buy(txn.quantity, txn.price, txn.fees)
@@ -51,6 +51,12 @@ class Portfolio:
         self.cash_account = CashAccount()
         for cash_txn in self._db.get_all_cash_transactions():
             self.cash_account.apply(cash_txn.amount)
+
+    def _load_sectors(self):
+        """Compiles a dictionary of all stocks with their associated sectors."""
+        self.sectors = {}
+        for stock in self._db.get_all_stocks():
+            self.sectors[stock.ticker] = stock.sector
 
     def _get_or_create_position(self, ticker: str) -> Position:
         """

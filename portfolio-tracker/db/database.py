@@ -3,8 +3,10 @@
 import logging
 import sqlite3
 from pathlib import Path
-from models.transaction import Transaction
 from models.cash_account import CashTransaction
+from models.stock import Stock
+from models.transaction import Transaction
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +31,19 @@ class Database:
         contents = schema_path.read_text()
         self._conn.executescript(contents)
         self._conn.commit()
+
+    def save_stock(self, stock: Stock) -> None:
+        self._conn.execute(
+            """
+            INSERT INTO stocks (ticker, name, sector, exchange) VALUES 
+            (?, ?, ?, ?)
+            """,
+            (stock.ticker, stock.name, stock.sector, stock.exchange)
+        )
+        self._conn.commit()
+        logger.debug(
+            "Saved stock: %s (%s)", stock.name, stock.ticker
+        )
 
     def save_transaction(self, txn: Transaction) -> None:
         self._conn.execute(
@@ -61,6 +76,11 @@ class Database:
             (ticker,))
         transactions = [Transaction.from_row(row) for row in rows]
         return transactions
+
+    def get_all_stocks(self) -> list[Stock]:
+        rows = self._conn.execute("SELECT * FROM stocks ORDER BY ticker")
+        stocks = [Stock.from_row(row) for row in rows]
+        return stocks
 
     def get_all_transactions(self) -> list[Transaction]:
         rows = self._conn.execute("SELECT * FROM transactions ORDER BY date, id")
