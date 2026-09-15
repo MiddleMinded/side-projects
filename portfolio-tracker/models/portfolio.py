@@ -114,17 +114,3 @@ class Portfolio:
         logger.info("settled trade: %s %s %s", txn.action, txn.ticker, delta)
 
         self._db.save_cash_transaction(cash_txn)
-
-if __name__ == "__main__":
-    db = Database(":memory:")
-    portfolio = Portfolio(db)
-    my_deposit = CashTransaction(CashFlowType.DEPOSIT, 20, datetime.date(2024, 1, 1), "Funding account")
-    portfolio.cash_account.apply(my_deposit.amount)
-    db.save_cash_transaction(my_deposit)
-    portfolio.buy("AAPL", 2, 10, datetime.date(2024, 1, 5))
-    portfolio.sell("AAPL", 1, 5, datetime.date(2024, 1, 10))
-    print(portfolio.cash_account.balance)
-    portfolio2 = Portfolio(db)
-    print(portfolio2.cash_account.balance)
-
-        
