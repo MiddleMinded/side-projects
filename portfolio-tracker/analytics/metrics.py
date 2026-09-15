@@ -1,5 +1,6 @@
 from models.portfolio import Portfolio
 from models.position import Position
+from models.transaction import Transaction
 
 def unrealized_gain(position: Position, current_price: float) -> float:
     """Calculate the difference between a position's current value and cost-basis."""
@@ -52,5 +53,17 @@ def position_weight(ticker: str, portfolio: Portfolio, current_prices: dict) -> 
 
     return pw
 
-def realized_gain_by_ticker(sell_records):
-    pass
+def realized_gain_by_ticker(transactions: list[Transaction]):
+    """
+    """
+    positions = {}
+    for txn in transactions():
+        ticker = txn.ticker
+        position = self._get_or_create_position(ticker)
+
+        if txn.action == "BUY":
+            position.buy(txn.quantity, txn.price, txn.fees)
+        elif txn.action == "SELL":
+            position.sell(txn.quantity, txn.price, txn.fees)
+        else:
+            raise ValueError(f"BUY or SELL is required, got {txn.action!r}")
