@@ -16,9 +16,6 @@ class Database:
         self.path = path
         self._conn = sqlite3.connect(path)
         self._conn.row_factory = sqlite3.Row
-
-        # no FKs in the schema yet; here so enforcement is on when 
-        # transactions.ticker gets its FK
         self._conn.execute("PRAGMA foreign_keys = ON")
         self._init_schema()
         logger.info("database ready: %s", self.path)
@@ -71,16 +68,27 @@ class Database:
             "saved cash transaction: %s %s", txn.flow_type, txn.amount
         )
 
-    def get_transactions_for_ticker(self, ticker: str) -> list[Transaction]:
-        rows = self._conn.execute("SELECT * FROM transactions WHERE ticker = ? ORDER BY date, id",
-            (ticker,))
-        transactions = [Transaction.from_row(row) for row in rows]
-        return transactions
+    def get_stock(self, ticker) -> Stock | None:
+        rows = self._conn.execute("SELECT * FROM stocks WHERE ticker = ?",
+                                  (ticker,))
+        row = rows.fetchone()
+        if row is None:
+            return None
+
+        stock = Stock.from_row(row)
+        return stock
 
     def get_all_stocks(self) -> list[Stock]:
         rows = self._conn.execute("SELECT * FROM stocks ORDER BY ticker")
         stocks = [Stock.from_row(row) for row in rows]
         return stocks
+    
+    def get_transactions_for_ticker(self, ticker: str) -> list[Transaction]:
+        rows = self._conn.execute(
+            "SELECT * FROM transactions WHERE ticker = ? ORDER BY date, id",
+            (ticker,))
+        transactions = [Transaction.from_row(row) for row in rows]
+        return transactions
 
     def get_all_transactions(self) -> list[Transaction]:
         rows = self._conn.execute("SELECT * FROM transactions ORDER BY date, id")
@@ -92,3 +100,10 @@ class Database:
             "SELECT * FROM cash_transactions ORDER BY date, id")
         cash_transactions = [CashTransaction.from_row(row) for row in rows]
         return cash_transactions
+
+if __name__ == "__main__":
+    db = Database(":memory:")
+    aapl = Stock("AAPL", "Apple, Inc.", "Tech", "NASDAQ")
+    db.save_stock(aapl)
+    print(db.get_stock("AAPL"))
+    print(db.get_stock("MSFT"))

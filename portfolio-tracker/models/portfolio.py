@@ -5,9 +5,11 @@ Portfolio: the top-level holding that derives positions from the transaction log
 import datetime
 import logging
 from db.database import Database
-from models.position import Position
-from models.transaction import Transaction
 from models.cash_account import CashFlowType, CashTransaction, CashAccount
+from models.position import Position
+from models.stock import Stock
+from models.transaction import Transaction
+
 
 logger = logging.getLogger(__name__)
 class Portfolio:
@@ -68,8 +70,41 @@ class Portfolio:
 
         return self.positions[ticker]
 
+    def _settle_trade(self, txn: Transaction) -> None:
+        """Calculates the delta of buy and sell transactions."""
+        if txn.action == "BUY":
+            delta = -(txn.quantity * txn.price + txn.fees)
+            description = (f"Bought {txn.quantity} shares of {txn.ticker} at "
+                           f"${txn.price}/share.")
+        elif txn.action == "SELL":
+            delta = txn.quantity * txn.price - txn.fees
+            description = (f"Sold {txn.quantity} shares of {txn.ticker} at "
+                                       f"${txn.price}/share.")
+        else:
+            raise ValueError(f"BUY or SELL was expected, got {txn.action!r}")
+
+        cash_txn = CashTransaction(CashFlowType.TRADE_SETTLEMENT, delta, 
+                                   txn.date, description)
+        self.cash_account.apply(delta)
+        logger.info("settled trade: %s %s %s", txn.action, txn.ticker, delta)
+
+        self._db.save_cash_transaction(cash_txn)
+
+    def get_or_create_stock(self, ticker, name, sector, exchange) -> Stock:
+        """
+        Return the Stock for `ticker`, creating a new one the first time 
+        it's seen.
+        """
+        stock = self._db.get_stock(ticker)
+        if stock is None:
+            stock = Stock(ticker, name, sector, exchange)
+            self._db.save_stock(stock)
+            self.sectors[stock.ticker] = stock.sector
+
+        return stock
+
     def buy(self, ticker: str, quantity: float, price: float, 
-            date: datetime.date, fees: float =0.0) -> Position:
+        date: datetime.date, fees: float =0.0) -> Position:
         """
         Record a buy: persist the transaction, then update the matching Position.
         """
@@ -101,22 +136,13 @@ class Portfolio:
         
         return realized_gain
 
-    def _settle_trade(self, txn: Transaction) -> None:
-        """Calculates the delta of buy and sell transactions."""
-        if txn.action == "BUY":
-            delta = -(txn.quantity * txn.price + txn.fees)
-            description = (f"Bought {txn.quantity} shares of {txn.ticker} at "
-                           f"${txn.price}/share.")
-        elif txn.action == "SELL":
-            delta = txn.quantity * txn.price - txn.fees
-            description = (f"Sold {txn.quantity} shares of {txn.ticker} at "
-                                       f"${txn.price}/share.")
-        else:
-            raise ValueError(f"BUY or SELL was expected, got {txn.action!r}")
-
-        cash_txn = CashTransaction(CashFlowType.TRADE_SETTLEMENT, delta, 
-                                   txn.date, description)
-        self.cash_account.apply(delta)
-        logger.info("settled trade: %s %s %s", txn.action, txn.ticker, delta)
-
-        self._db.save_cash_transaction(cash_txn)
+if __name__ == "__main__":
+    db = Database(":memory:")
+    cash = CashTransaction(CashFlowType.DEPOSIT, 100, datetime.date(2026, 9, 15), "test")
+    db.save_cash_transaction(cash)
+    portfolio = Portfolio(db)
+    portfolio.get_or_create_stock("SM", "SM Energy", "Energy", "NASDAQ")
+    portfolio.buy("SM", 1, 10, datetime.date(2026, 9, 16), 0)
+    print(db.get_stock("SM"))
+    print(portfolio.sectors)
+    print(portfolio.get_or_create_stock("SM", "SM Energy", "Energy", "NASDAQ"))
