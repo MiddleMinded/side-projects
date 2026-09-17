@@ -106,7 +106,8 @@ class Portfolio:
     def buy(self, ticker: str, quantity: float, price: float, 
         date: datetime.date, fees: float =0.0) -> Position:
         """
-        Record a buy: persist the transaction, then update the matching Position.
+        Record a buy: persist the transaction, then update the matching 
+        Position.
         """
         txn = Transaction(ticker, "BUY", quantity, price, date, fees)
         self._settle_trade(txn)
@@ -122,7 +123,8 @@ class Portfolio:
     def sell(self, ticker: str, quantity: float, price: float, 
             date: datetime.date, fees: float =0.0) -> float:
         """
-        Record a sell: mutate the matching Position, then persist the transaction.
+        Record a sell: mutate the matching Position, then persist the 
+        transaction.
         """
         txn = Transaction(ticker, "SELL", quantity, price, date, fees)
         position = self._get_or_create_position(txn.ticker)
@@ -136,13 +138,52 @@ class Portfolio:
         
         return realized_gain
 
+    def deposit(self, amount: float, date: datetime.date, 
+                description: str = "No description provided") -> None:
+        """
+        Create a cash deposit transaction in the database and adjust 
+        cash_account.
+        """
+        cash_txn = CashTransaction(
+            CashFlowType.DEPOSIT, amount, date, description)
+        self.cash_account.apply(amount)
+        logger.info("deposit created: %s %s", date, amount)
+
+        self._db.save_cash_transaction(cash_txn)
+
+    def withdraw(self, amount: float, date: datetime.date, 
+                    description: str = "No description provided") -> None:
+        """
+        Create a cash withdrawal transaction in the database and adjust 
+        cash_account.
+        """
+        amount = -amount
+        cash_txn = CashTransaction(
+            CashFlowType.WITHDRAWAL, amount, date, description)
+        self.cash_account.apply(amount)
+        logger.info("withdrawal created: %s %s", date, amount)
+
+        self._db.save_cash_transaction(cash_txn)
+
+    def record_dividend(self, amount: float, date: datetime.date, 
+                description: str = "No description provided") -> None:
+        """
+        Create a cash dividend transaction in the database and adjust 
+        cash_account.
+        """
+        cash_txn = CashTransaction(
+            CashFlowType.DIVIDEND, amount, date, description)
+        self.cash_account.apply(amount)
+        logger.info("dividend created: %s %s", date, amount)
+
+        self._db.save_cash_transaction(cash_txn)
+
 if __name__ == "__main__":
     db = Database(":memory:")
-    cash = CashTransaction(CashFlowType.DEPOSIT, 100, datetime.date(2026, 9, 15), "test")
-    db.save_cash_transaction(cash)
     portfolio = Portfolio(db)
-    portfolio.get_or_create_stock("SM", "SM Energy", "Energy", "NASDAQ")
-    portfolio.buy("SM", 1, 10, datetime.date(2026, 9, 16), 0)
-    print(db.get_stock("SM"))
-    print(portfolio.sectors)
-    print(portfolio.get_or_create_stock("SM", "SM Energy", "Energy", "NASDAQ"))
+    portfolio.deposit(100, datetime.date(2026, 9, 15), "Cash in")
+    portfolio.withdraw(50, datetime.date(2026, 9, 16), "Cash out")
+    portfolio.record_dividend(5, datetime.date(2026, 9, 17), "Dividend in")
+    print(portfolio.cash_account.balance)
+    print(db.get_all_cash_transactions())
+    portfolio.withdraw(1000, datetime.date(2026, 9, 18), "Overdraw test")
