@@ -127,3 +127,12 @@ def time_weighted_return(period_returns: list[float]) -> float:
 
     return (twr - 1) * 100
 
+def total_portfolio_value(portfolio: Portfolio, current_prices: dict) -> float:
+    """
+    Sums and returns total market value and the portfolio cash account balance.
+    """
+    tmv = total_market_value(portfolio, current_prices)
+    cash = portfolio.cash_account.balance
+
+    return tmv + cash
+

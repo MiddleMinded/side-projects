@@ -18,3 +18,16 @@ those logs.
   of period returns — but nothing in the project can currently produce that
   list from real data. For now it can only be exercised with hand-supplied
   example returns.
+- **Money is stored as `float`.** Binary floating point can't represent most
+  decimal amounts exactly, so displayed values can look inconsistent by a
+  cent. For example, a market value of `15.165` may display as `15.16` while
+  the gain computed from it displays as `0.02`, because each figure is
+  rounded independently from its own binary error. Totals are correct to
+  within floating-point error, but not exact.
+
+## Future upgrades
+
+- **Store money as integer cents.** Replace `float` amounts with integer cents
+  throughout the models, database schema, and metrics, and convert to dollars
+  only at display time. This makes arithmetic exact and rounds each value once,
+  fixing the display inconsistency described under Known limitations.

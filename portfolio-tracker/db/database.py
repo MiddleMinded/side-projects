@@ -48,7 +48,8 @@ class Database:
             INSERT INTO transactions (ticker, action, quantity, price, fees, date)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (txn.ticker, txn.action, txn.quantity, txn.price, txn.fees, txn.date.isoformat()),
+            (txn.ticker, txn.action, txn.quantity, txn.price, txn.fees, 
+             txn.date.isoformat()),
         )
         self._conn.commit()
         logger.debug(
