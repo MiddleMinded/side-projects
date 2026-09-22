@@ -18,9 +18,9 @@ def positions_table(portfolio: Portfolio, current_prices: dict) -> None:
         position_data = {
             "TICKER": ticker,
             "SHARES": position.quantity,
-            "AVERAGE COST": position.avg_cost,
-            "MARKET VALUE": market_value,
-            "UNREALIZED GAIN": unrealized_gain
+            "AVERAGE COST ($)": position.avg_cost,
+            "MARKET VALUE ($)": market_value,
+            "UNREALIZED GAIN ($)": unrealized_gain
         }
         table_data.append(position_data)
 
@@ -29,9 +29,9 @@ def positions_table(portfolio: Portfolio, current_prices: dict) -> None:
     totals_row = {
             "TICKER": "-TOTAL-",
             "SHARES": "",
-            "AVERAGE COST": "",
-            "MARKET VALUE": tmv,
-            "UNREALIZED GAIN": ug
+            "AVERAGE COST ($)": "",
+            "MARKET VALUE ($)": tmv,
+            "UNREALIZED GAIN ($)": ug
     }
     table_data.append(totals_row)
 
@@ -47,17 +47,48 @@ def cash_summary(portfolio: Portfolio, current_prices: dict) -> None:
     """
     table_data = [{
         "CATEGORY": "Cash Account Balance",
-        "AMOUNT": portfolio.cash_account.balance
+        "AMOUNT ($)": portfolio.cash_account.balance
         },
         {
         "CATEGORY": "Total Portfolio Value",
-        "AMOUNT": metrics.total_portfolio_value(portfolio, current_prices)
+        "AMOUNT ($)": metrics.total_portfolio_value(portfolio, current_prices)
         }]
 
     print(tabulate(table_data,
             headers="keys",
             tablefmt="grid",
             floatfmt=("", ".2f")))
+
+def diversification_table(portfolio: Portfolio, current_prices: dict) -> None:
+    """Prints a table with the current portfolio diversification by sector."""
+    sectors = []
+    sector_dict = metrics.diversification_by_sector(portfolio, current_prices)
+    for sector, weight in sector_dict.items():
+        temp_dict = {
+            "SECTOR": sector,
+            "WEIGHT (%)": weight
+        }
+        sectors.append(temp_dict)
+
+    sorted_sectors = sorted(
+        sectors, key=lambda row: row["WEIGHT (%)"], reverse=True)
+
+    print(tabulate(sorted_sectors, 
+        headers="keys",
+        tablefmt="grid",
+        floatfmt=("", ".2f")))
+
+def portfolio_summary(portfolio: Portfolio, current_prices: dict) -> None:
+    """
+    Prints tables containing the current portfolio positions and the cash 
+    summary.
+    """
+    print("\n---CURRENT POSITIONS---")
+    positions_table(portfolio, current_prices)
+    print("\n---PORTFOLIO VALUE---")
+    cash_summary(portfolio, current_prices)
+    print("\n---SECTOR DIVERSIFICATION---")
+    diversification_table(portfolio, current_prices)
 
 if __name__ == "__main__":
     db = Database(":memory:")
@@ -71,5 +102,4 @@ if __name__ == "__main__":
     portfolio.buy("CRZY", 1.5, 10.10, datetime.date(2026, 9, 20), 0)
     portfolio.buy("AAPL", 3.0, 20.00, datetime.date(2026, 9, 20), 0)
     current_prices = {"AAPL": 30.00, "MSFT": 5.00, "CRZY": 10.11}
-    positions_table(portfolio, current_prices)
-    cash_summary(portfolio, current_prices)
+    portfolio_summary(portfolio, current_prices)
