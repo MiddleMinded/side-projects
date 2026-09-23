@@ -59,6 +59,35 @@ def cash_summary(portfolio: Portfolio, current_prices: dict) -> None:
             tablefmt="grid",
             floatfmt=("", ".2f")))
 
+def roi_table(portfolio: Portfolio, current_prices: dict) -> None:
+    """Prints a table with the portfolio's simple ROI."""
+    transactions = portfolio.get_transactions()
+    realized_gains = metrics.realized_gain_by_ticker(transactions)
+    total_rg = 0.0
+    total_rg = sum(realized_gains.values())
+
+    tmv = metrics.total_market_value(portfolio, current_prices)
+    tcb = metrics.total_cost_basis(portfolio)
+    roi = metrics.simple_roi(tcb, tmv, total_rg)
+
+    table_data = [{
+            "CATEGORY": "Cost Basis ($)",
+            "AMOUNT": tcb
+            },
+            {
+            "CATEGORY": "Market Value ($)",
+            "AMOUNT": tmv
+            },
+            {
+            "CATEGORY": "Return-On-Investment (%)",
+            "AMOUNT": roi
+            }]
+
+    print(tabulate(table_data,
+            headers="keys",
+            tablefmt="grid",
+            floatfmt=(".2f", ".2f")))
+
 def diversification_table(portfolio: Portfolio, current_prices: dict) -> None:
     """Prints a table with the current portfolio diversification by sector."""
     sectors = []
@@ -87,8 +116,12 @@ def portfolio_summary(portfolio: Portfolio, current_prices: dict) -> None:
     positions_table(portfolio, current_prices)
     print("\n---PORTFOLIO VALUE---")
     cash_summary(portfolio, current_prices)
+    print("\n---PORTFOLIO PERFORMANCE---")
+    roi_table(portfolio, current_prices)
     print("\n---SECTOR DIVERSIFICATION---")
     diversification_table(portfolio, current_prices)
+    
+
 
 if __name__ == "__main__":
     db = Database(":memory:")
@@ -101,5 +134,6 @@ if __name__ == "__main__":
     portfolio.buy("MSFT", 2.0, 20.00, datetime.date(2026, 9, 20), 0)
     portfolio.buy("CRZY", 1.5, 10.10, datetime.date(2026, 9, 20), 0)
     portfolio.buy("AAPL", 3.0, 20.00, datetime.date(2026, 9, 20), 0)
+    portfolio.sell("AAPL", 5.0, 40.00, datetime.date(2026, 9, 22), 0)
     current_prices = {"AAPL": 30.00, "MSFT": 5.00, "CRZY": 10.11}
     portfolio_summary(portfolio, current_prices)

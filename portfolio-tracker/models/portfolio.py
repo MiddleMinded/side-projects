@@ -103,6 +103,10 @@ class Portfolio:
 
         return stock
 
+    def get_transactions(self) -> list[Transaction]:
+        """A public function for retrieving all stock transactions."""
+        return self._db.get_all_transactions()
+
     def buy(self, ticker: str, quantity: float, price: float, 
         date: datetime.date, fees: float =0.0) -> Position:
         """
@@ -177,6 +181,8 @@ class Portfolio:
         logger.info("dividend created: %s %s", date, amount)
 
         self._db.save_cash_transaction(cash_txn)
+
+
 
 if __name__ == "__main__":
     db = Database(":memory:")

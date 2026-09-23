@@ -61,7 +61,7 @@ def position_weight(
 
     return pw
 
-def realized_gain_by_ticker(transactions: list[Transaction]):
+def realized_gain_by_ticker(transactions: list[Transaction]) -> dict:
     """Calculates the realized gain for each Position in the portfolio."""
     positions = {}
     gains = {}
