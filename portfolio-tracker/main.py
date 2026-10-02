@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 from db.database import Database
 from models.portfolio import Portfolio
+from reports.display import portfolio_summary
 
 def main():
     db_dir = Path(__file__).parent
@@ -18,6 +19,8 @@ def run(portfolio: Portfolio):
     print("#" + " " * 10 + "PORTFOLIO TRACKER MAIN MENU" + " " * 10 + "#")
     print("#" + " " * 47 + "#")
     print("#" * 49)
+
+    current_prices = {}
 
     while True:
         print("\nSelect one of the options below:\n")
@@ -59,8 +62,15 @@ def run(portfolio: Portfolio):
                 pass 
             elif selection == 5:
                 pass 
+            
             elif selection == 6:
-                pass 
+                for ticker, position in portfolio.positions.items():
+                    if position.quantity == 0:
+                        current_prices[ticker] = 0.0
+                    else:
+                        current_prices[ticker] = get_price(ticker, current_prices)
+                portfolio_summary(portfolio, current_prices)
+
             elif selection == 7:
                 pass 
             elif selection == 8:
