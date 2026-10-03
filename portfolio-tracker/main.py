@@ -50,8 +50,10 @@ def run(portfolio: Portfolio):
         else:
             selection = int(selection)
             if selection == 1:
-                print("1")
-                break
+                handle_buy(portfolio)
+
+
+
             elif selection == 2:
                 print("2")
                 break
@@ -106,17 +108,32 @@ def prompt_float(prompt: str) -> float:
             continue
 
         return float_value
+
+def handle_buy(portfolio: Portfolio):
+    ticker = input("\nEnter the ticker symbol: ")
+    ticker = ticker.strip().upper()
+    if ticker in portfolio.sectors:
+        print(f"Found {ticker} in database.")
+    else:
+        print(
+            f"{ticker} not found in database. Provide the following details.\n")
+        while True:
+            try:
+                name = input("Full company name: ")
+                sector = input("Stock sector: ")
+                exchange = input("Stock exchange: ")
+                stock = portfolio.get_or_create_stock(
+                    ticker, name, sector, exchange)
+                break
+            except ValueError:
+                print("\nWARNING: All fields must be completed.\n")
+                continue
+
+        
          
 
 if __name__ == "__main__":
-    # current_prices = {
-    #     "AAPL": 10,
-    #     "MSFT": 20,
-    #     "SPCX": 120
-    # }
-    # ticker = "TSLA"
-    # print(get_price(ticker, current_prices))
-    # print(get_price(ticker, current_prices))
     main()
+
 
     
