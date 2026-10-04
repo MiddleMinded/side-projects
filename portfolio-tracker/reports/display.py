@@ -120,20 +120,3 @@ def portfolio_summary(portfolio: Portfolio, current_prices: dict) -> None:
     roi_table(portfolio, current_prices)
     print("\n---SECTOR DIVERSIFICATION---")
     diversification_table(portfolio, current_prices)
-    
-
-
-if __name__ == "__main__":
-    db = Database(":memory:")
-    portfolio = Portfolio(db)
-    portfolio.deposit(1000, datetime.date(2026, 9, 15), "Cash in")
-    portfolio.get_or_create_stock("AAPL", "Apple, Inc.", "Tech", "NASDAQ")
-    portfolio.get_or_create_stock("MSFT", "Microsoft, Inc.", "Tech", "NASDAQ")
-    portfolio.get_or_create_stock("CRZY", "Crazy Co.", "Durable Goods", "NYSE")
-    portfolio.buy("AAPL", 5.0, 10.00, datetime.date(2026, 9, 20), 0)
-    portfolio.buy("MSFT", 2.0, 20.00, datetime.date(2026, 9, 20), 0)
-    portfolio.buy("CRZY", 1.5, 10.10, datetime.date(2026, 9, 20), 0)
-    portfolio.buy("AAPL", 3.0, 20.00, datetime.date(2026, 9, 20), 0)
-    portfolio.sell("AAPL", 5.0, 40.00, datetime.date(2026, 9, 22), 0)
-    current_prices = {"AAPL": 30.00, "MSFT": 5.00, "CRZY": 10.11}
-    portfolio_summary(portfolio, current_prices)

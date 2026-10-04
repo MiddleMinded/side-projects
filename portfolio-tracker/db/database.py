@@ -101,10 +101,3 @@ class Database:
             "SELECT * FROM cash_transactions ORDER BY date, id")
         cash_transactions = [CashTransaction.from_row(row) for row in rows]
         return cash_transactions
-
-if __name__ == "__main__":
-    db = Database(":memory:")
-    aapl = Stock("AAPL", "Apple, Inc.", "Tech", "NASDAQ")
-    db.save_stock(aapl)
-    print(db.get_stock("AAPL"))
-    print(db.get_stock("MSFT"))

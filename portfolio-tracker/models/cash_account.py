@@ -53,10 +53,3 @@ class CashAccount:
                 f"balance cannot be less than zero, got {new_balance!r}")
 
         self.balance = new_balance
-
-if __name__ == "__main__":
-    cash = CashAccount()
-    cash.apply(100)
-    cash.apply(-30)
-    print(cash.balance)
-    cash.apply(-100)

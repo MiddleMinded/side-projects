@@ -124,14 +124,30 @@ def handle_buy(portfolio: Portfolio):
                 "Enter the fees paid or leave blank for no fees: $", default=0.0)
             portfolio.buy(ticker, quantity, price, date, fees)
             break
-        except ValueError:
+        except ValueError as e:
+            print(f"\n{e}\n")
             continue
 
 def handle_sell(portfolio: Portfolio):
     """
     Creates a sell transaction for a stock currently held in the portfolio.
     """
-    pass
+    ticker = input("\nEnter the ticker symbol: ")
+    ticker = ticker.strip().upper()
+    while True:
+        try:
+            date = prompt_date(
+                "Enter the transaction date (YYYY-MM-DD) or leave blank for " \
+                "today: ")
+            quantity = prompt_float("Enter the sell quantity: ")
+            price = prompt_float("Enter the sell price: $")
+            fees = prompt_float(
+                "Enter the fees paid or leave blank for no fees: $", default=0.0)
+            portfolio.sell(ticker, quantity, price, date, fees)
+            break
+        except ValueError as e:
+            print(f"\n{e}\n")
+            continue
 
 def handle_deposit(portfolio: Portfolio):
     """Creates a deposit transaction."""

@@ -131,7 +131,7 @@ class Portfolio:
         transaction.
         """
         txn = Transaction(ticker, "SELL", quantity, price, date, fees)
-        position = self._get_or_create_position(txn.ticker)
+        position = self.positions.get(txn.ticker, Position(ticker))
 
         realized_gain = position.sell(quantity, price, fees)
         self._settle_trade(txn)
@@ -181,15 +181,3 @@ class Portfolio:
         logger.info("dividend created: %s %s", date, amount)
 
         self._db.save_cash_transaction(cash_txn)
-
-
-
-if __name__ == "__main__":
-    db = Database(":memory:")
-    portfolio = Portfolio(db)
-    portfolio.deposit(100, datetime.date(2026, 9, 15), "Cash in")
-    portfolio.withdraw(50, datetime.date(2026, 9, 16), "Cash out")
-    portfolio.record_dividend(5, datetime.date(2026, 9, 17), "Dividend in")
-    print(portfolio.cash_account.balance)
-    print(db.get_all_cash_transactions())
-    portfolio.withdraw(1000, datetime.date(2026, 9, 18), "Overdraw test")
