@@ -1,3 +1,5 @@
+"""Composition root and CLI entry point for the portfolio tracker."""
+
 import bext
 import logging
 import time
@@ -11,6 +13,7 @@ from reports.display import (portfolio_summary, positions_table, cash_summary,
                              roi_table, diversification_table)
 
 def main():
+    """Construct the Database and Portfolio, run the menu loop, then close up."""
     file_dir = Path(__file__).parent
     log_path = file_dir / "portfolio_tracker.log"
     logging.basicConfig(
@@ -23,6 +26,7 @@ def main():
     user_db.close()
 
 def run(portfolio: Portfolio):
+    """Print the main menu and dispatch the user's selection until they exit."""
     print("#" * 49)
     print("#" + " " * 47 + "#")
     print("#" + " " * 10 + "PORTFOLIO TRACKER MAIN MENU" + " " * 10 + "#")

@@ -1,3 +1,8 @@
+"""
+Formats and prints portfolio report tables via tabulate. Delegates all
+domain math to analytics.metrics.
+"""
+
 from analytics import metrics
 from models.portfolio import Portfolio
 from tabulate import tabulate

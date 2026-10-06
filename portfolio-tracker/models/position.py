@@ -4,12 +4,16 @@ from dataclasses import dataclass
 
 @dataclass
 class Position:
-    """Class for managing a single position: ticker, quantity, average cost"""
+    """
+    A single security position — ticker, quantity, and average cost — kept
+    up to date in place by buy()/sell().
+    """
     ticker: str
     quantity: float = 0.0
     avg_cost: float = 0.0
 
     def __post_init__(self) -> None:
+        """Validate the ticker and normalize it to uppercase."""
         if not self.ticker:
             raise ValueError(f"ticker symbol required, got {self.ticker!r}")
         self.ticker = self.ticker.upper()

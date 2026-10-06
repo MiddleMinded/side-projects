@@ -1,3 +1,8 @@
+"""
+Pure functions for computing portfolio gains, ROI, and diversification.
+Nothing here touches the database; every value needed is passed in.
+"""
+
 from models.portfolio import Portfolio
 from models.position import Position
 from models.transaction import Transaction

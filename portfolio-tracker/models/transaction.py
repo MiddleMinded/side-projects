@@ -21,6 +21,7 @@ class Transaction:
     # __post_init__ guards below are mirrored by CHECK constraints in db/schema.sql
     # (transactions table) — change both together.
     def __post_init__(self) -> None:
+        """Validate and normalize fields, raising on anything invalid."""
         if not self.ticker:
             raise ValueError(f"ticker symbol required, got {self.ticker!r}")
         object.__setattr__(self, "ticker", self.ticker.upper())
@@ -55,6 +56,7 @@ class Transaction:
 
     @classmethod
     def from_row(cls, row) -> "Transaction":
+        """Build a Transaction from a sqlite3.Row."""
         return cls(
             ticker=row["ticker"],
             action=row["action"],

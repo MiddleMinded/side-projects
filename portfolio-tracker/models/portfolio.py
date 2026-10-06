@@ -23,6 +23,7 @@ class Portfolio:
     """
 
     def __init__(self, db: Database):
+        """Store the database connection and rebuild all derived state from it."""
         self._db = db
 
         self._load_positions()

@@ -26,6 +26,7 @@ class Stock:
 
     @classmethod
     def from_row(cls, row) -> "Stock":
+        """Build a Stock from a sqlite3.Row."""
         return cls(
             ticker=row["ticker"],
             name=row["name"],

@@ -1,3 +1,5 @@
+"""Menu-action handlers and the generic input-prompt utilities they share."""
+
 import datetime
 from models.portfolio import Portfolio
 
@@ -84,7 +86,7 @@ def handle_deposit(portfolio: Portfolio):
             continue
 
 def handle_withdraw(portfolio: Portfolio):
-    """Creates a withdraw transaction."""
+    """Creates a withdrawal transaction."""
     while True:
         try:
             date = prompt_date(
@@ -156,8 +158,8 @@ def prompt_float(prompt: str, default=None) -> float:
 
         return float_value
 
-def prompt_date(prompt: str) -> datetime:
-    """Validates and converts user input to a datetime object."""
+def prompt_date(prompt: str) -> datetime.date:
+    """Validates and converts user input to a date."""
     while True:
         value = input(prompt)
         if value == "":

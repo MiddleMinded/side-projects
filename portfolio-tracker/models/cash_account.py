@@ -1,11 +1,11 @@
-"""Class for handling cash flow between transactions and the database."""
+"""Classes for cash flow events and the portfolio's cash balance."""
 
 import datetime
 import enum
 from dataclasses import dataclass
 
 class CashFlowType(str, enum.Enum):
-    """Class for initializing cash flow members."""
+    """The kind of cash event a CashTransaction represents."""
     DEPOSIT = "DEPOSIT"
     WITHDRAWAL = "WITHDRAWAL"
     TRADE_SETTLEMENT = "TRADE_SETTLEMENT"
@@ -14,7 +14,8 @@ class CashFlowType(str, enum.Enum):
 @dataclass(frozen=True)
 class CashTransaction:
     """
-    Class for managing a single cash transaction: type, amount, date, description
+    An immutable record of a single cash event: flow type, amount, date, and
+    description.
     """
     flow_type: CashFlowType
     amount: float
@@ -22,6 +23,7 @@ class CashTransaction:
     description: str = "No description provided"
 
     def __post_init__(self) -> None:
+        """Validate the amount against its flow type, raising on anything invalid."""
         if not isinstance(self.flow_type, CashFlowType):
             raise TypeError("expected DEPOSIT, WITHDRAWAL, TRADE_SETTLEMENT or "
                             f"DIVIDEND, got {self.flow_type!r}")
@@ -33,6 +35,7 @@ class CashTransaction:
 
     @classmethod
     def from_row(cls, row) -> "CashTransaction":
+        """Build a CashTransaction from a sqlite3.Row."""
         return cls(
             flow_type=CashFlowType(row["flow_type"]),
             amount=row["amount"],
@@ -42,7 +45,7 @@ class CashTransaction:
 
 @dataclass
 class CashAccount:
-    """Class for managing the current balance of the portfolio"""
+    """The portfolio's current cash balance, guarded against going negative."""
     balance: float = 0.0
 
     def apply(self, delta: float) -> None:
