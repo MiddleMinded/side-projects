@@ -20,6 +20,7 @@ def handle_buy(portfolio: Portfolio):
                 exchange = input("Stock exchange: ")
                 portfolio.get_or_create_stock(
                     ticker, name, sector, exchange)
+                print(f"Stock record for {ticker} created.\n")
                 break
             except ValueError as e:
                 print("\nWARNING: All fields must be completed.\n")
@@ -35,6 +36,7 @@ def handle_buy(portfolio: Portfolio):
             fees = prompt_float(
                 "Enter the fees paid or leave blank for no fees: $", default=0.0)
             portfolio.buy(ticker, quantity, price, date, fees)
+            print(f"Purchase of {quantity:.5f} shares of {ticker} recorded.")
             break
         except ValueError as e:
             print(f"\n{e}\n")
@@ -56,6 +58,7 @@ def handle_sell(portfolio: Portfolio):
             fees = prompt_float(
                 "Enter the fees paid or leave blank for no fees: $", default=0.0)
             portfolio.sell(ticker, quantity, price, date, fees)
+            print(f"Sale of {quantity:.5f} shares of {ticker} recorded.")
             break
         except ValueError as e:
             print(f"\n{e}\n")
@@ -74,6 +77,7 @@ def handle_deposit(portfolio: Portfolio):
                 portfolio.deposit(amount, date)
             else:
                 portfolio.deposit(amount, date, description)
+            print(f"Deposit of ${amount:.2f} recorded.")
             break
         except ValueError as e:
             print(f"\n{e}\n")
@@ -92,6 +96,7 @@ def handle_withdraw(portfolio: Portfolio):
                 portfolio.withdraw(amount, date)
             else:
                 portfolio.withdraw(amount, date, description)
+            print(f"Withdrawal of ${amount:.2f} recorded.")
             break
         except ValueError as e:
             print(f"\n{e}\n")
@@ -110,10 +115,20 @@ def handle_record_dividend(portfolio: Portfolio):
                 portfolio.record_dividend(amount, date)
             else:
                 portfolio.record_dividend(amount, date, description)
+            print(f"Dividend of ${amount:.2f} recorded.")
             break
         except ValueError as e:
             print(f"\n{e}\n")
             continue
+
+def refresh_current_prices(portfolio: Portfolio, current_prices: dict) -> None:
+    """Prompts user for the price of every active position in the portfolio."""
+    for ticker, position in portfolio.positions.items():
+        if position.quantity == 0:
+            current_prices[ticker] = 0.0
+        else:
+            current_prices[ticker] = get_price(
+            ticker, current_prices)
 
 def get_price(ticker: str, current_prices: dict) -> float:
     """Returns the current price for a given ticker."""

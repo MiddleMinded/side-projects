@@ -3,10 +3,11 @@ import time
 from pathlib import Path
 from handlers import (handle_buy, handle_sell, handle_deposit, 
                       handle_withdraw, handle_record_dividend,
-                      get_price)
+                      refresh_current_prices)
 from db.database import Database
 from models.portfolio import Portfolio
-from reports.display import portfolio_summary
+from reports.display import (portfolio_summary, positions_table, cash_summary,
+                             roi_table, diversification_table)
 
 def main():
     db_dir = Path(__file__).parent
@@ -54,39 +55,48 @@ def run(portfolio: Portfolio):
             selection = int(selection)
             if selection == 1:
                 handle_buy(portfolio)
+                input("\nPress Enter to continue.\n")
             
             elif selection == 2:
                 handle_sell(portfolio)
-            
+                input("\nPress Enter to continue.\n")
+
             elif selection == 3:
                 handle_deposit(portfolio)
-            
+                input("\nPress Enter to continue.\n")
+
             elif selection == 4:
-                handle_withdraw(portfolio) 
+                handle_withdraw(portfolio)
+                input("\nPress Enter to continue.\n")
             
             elif selection == 5:
                 handle_record_dividend(portfolio)
+                input("\nPress Enter to continue.\n")
             
             elif selection == 6:
-                for ticker, position in portfolio.positions.items():
-                    if position.quantity == 0:
-                        current_prices[ticker] = 0.0
-                    else:
-                        current_prices[ticker] = get_price(
-                            ticker, current_prices)
+                refresh_current_prices(portfolio, current_prices)
                 portfolio_summary(portfolio, current_prices)
+                input("\nPress Enter to continue.\n")
 
             elif selection == 7:
-                pass 
+                refresh_current_prices(portfolio, current_prices)
+                positions_table(portfolio, current_prices)
+                input("\nPress Enter to continue.\n")
             
             elif selection == 8:
-                pass 
+                refresh_current_prices(portfolio, current_prices)
+                cash_summary(portfolio, current_prices)
+                input("\nPress Enter to continue.\n")
             
             elif selection == 9:
-                pass 
+                refresh_current_prices(portfolio, current_prices)
+                roi_table(portfolio, current_prices)
+                input("\nPress Enter to continue.\n")
             
             elif selection == 10:
-                pass 
+                refresh_current_prices(portfolio, current_prices)
+                diversification_table(portfolio, current_prices)
+                input("\nPress Enter to continue.\n")
             
             elif selection == 11:
                 break
