@@ -1,4 +1,5 @@
 import bext
+import logging
 import time
 from pathlib import Path
 from handlers import (handle_buy, handle_sell, handle_deposit, 
@@ -10,8 +11,12 @@ from reports.display import (portfolio_summary, positions_table, cash_summary,
                              roi_table, diversification_table)
 
 def main():
-    db_dir = Path(__file__).parent
-    db_path = db_dir / "user_data.db"
+    file_dir = Path(__file__).parent
+    log_path = file_dir / "portfolio_tracker.log"
+    logging.basicConfig(
+        level=logging.INFO, filename=log_path, format=
+        '%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+    db_path = file_dir / "user_data.db"
     user_db = Database(db_path)
     user_portfolio = Portfolio(user_db)
     run(user_portfolio)
