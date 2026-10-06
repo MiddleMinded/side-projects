@@ -1,6 +1,4 @@
-import datetime
 from analytics import metrics
-from db.database import Database
 from models.portfolio import Portfolio
 from tabulate import tabulate
 
