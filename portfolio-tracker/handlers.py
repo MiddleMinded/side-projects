@@ -78,7 +78,24 @@ def handle_deposit(portfolio: Portfolio):
         except ValueError as e:
             print(f"\n{e}\n")
             continue
-    
+
+def handle_withdraw(portfolio: Portfolio):
+    """Creates a withdraw transaction."""
+    while True:
+        try:
+            date = prompt_date(
+                "Enter the transaction date (YYYY-MM-DD) or leave blank for " \
+                "today: ")
+            amount = prompt_float("Enter the amount: $")
+            description = input("Enter a description for the transaction: ")
+            if description == "":
+                portfolio.withdraw(amount, date)
+            else:
+                portfolio.withdraw(amount, date, description)
+            break
+        except ValueError as e:
+            print(f"\n{e}\n")
+            continue
 
 def get_price(ticker: str, current_prices: dict) -> float:
     """Returns the current price for a given ticker."""
