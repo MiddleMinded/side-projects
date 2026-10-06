@@ -2,7 +2,8 @@ import bext
 import time
 from pathlib import Path
 from handlers import (handle_buy, handle_sell, handle_deposit, 
-                      handle_withdraw, get_price)
+                      handle_withdraw, handle_record_dividend,
+                      get_price)
 from db.database import Database
 from models.portfolio import Portfolio
 from reports.display import portfolio_summary
@@ -64,7 +65,7 @@ def run(portfolio: Portfolio):
                 handle_withdraw(portfolio) 
             
             elif selection == 5:
-                pass
+                handle_record_dividend(portfolio)
             
             elif selection == 6:
                 for ticker, position in portfolio.positions.items():
